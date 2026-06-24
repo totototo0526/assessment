@@ -74,7 +74,8 @@
         function copyText(index) {
             const textarea = document.getElementById(`prompt-${index}`);
             textarea.select();
-            navigator.clipboard.writeText(textarea.value).then(() => {
+            
+            const onSuccess = () => {
                 const btn = document.getElementById(`copyBtn-${index}`);
                 const originalText = btn.innerHTML;
                 btn.innerHTML = 'コピーしました！';
@@ -86,7 +87,18 @@
                     btn.classList.remove('bg-green-600');
                     btn.classList.add('bg-brand-600');
                 }, 2000);
-            });
+            };
+
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(textarea.value).then(onSuccess);
+                } else {
+                    document.execCommand('copy');
+                    onSuccess();
+                }
+            } catch (err) {
+                alert('コピーに失敗しました。手動でコピーしてください。');
+            }
         }
 
         function clearHistory() {
