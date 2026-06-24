@@ -272,12 +272,6 @@
                         「正直、今日のお話を伺う限り、アラジンもかなり活用されていて、無理にシステムを入れ替えるようなお話ではないと思いました。<br>ただ、製造業の現場って、システムだけでは管理しきれない『意思決定の判断』が結構ありますよね。私自身、現場にいた頃からそういう意思決定の部分にすごく興味がありまして、今日のお話はかなり勉強になりました。<br>よろしければ今回の内容を簡単なレポートにしてお送りさせてください。また半年後でも一年後でも、その後の運用状況などをお聞かせいただけると嬉しいです。」
                     </div>
 
-                    <div class="text-center">
-                        <button onclick="copyPromptForAI()" id="copyPromptBtn" class="bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 mx-auto">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                            <span>AIレポート生成用プロンプトをコピー</span>
-                        </button>
-                    </div>
                 </div>
 
             </div>
@@ -345,7 +339,7 @@
         // Initially trigger score logic to set defaults
         document.querySelectorAll('input[type="range"]').forEach(updateScore);
 
-        function copyPromptForAI() {
+        function savePromptSilently() {
             const history = document.querySelectorAll('input[type="text"]')[0].value || "未入力";
             const usage = document.querySelectorAll('input[type="text"]')[1].value || "未入力";
             const scores = Array.from(document.querySelectorAll('input[type="range"]')).map(el => parseInt(el.value));
@@ -372,19 +366,14 @@
   3. 次のステップ・改善提案
 ・特に「発注判断」や「情報共有」の点数が低い場合、それが引き起こす「属人化のリスク」について言及してください。`;
 
-            navigator.clipboard.writeText(prompt).then(() => {
-                const btnSpan = document.querySelector('#copyPromptBtn span');
-                const originalText = btnSpan.innerText;
-                btnSpan.innerText = "コピー完了！ChatGPTに貼り付けてください";
-                document.getElementById('copyPromptBtn').classList.add('text-green-400', 'border-green-500');
-                
-                setTimeout(() => {
-                    btnSpan.innerText = originalText;
-                    document.getElementById('copyPromptBtn').classList.remove('text-green-400', 'border-green-500');
-                }, 3000);
-            }).catch(err => {
-                alert('コピーに失敗しました。');
+            // Save to Local Storage
+            const savedPrompts = JSON.parse(localStorage.getItem('savedPrompts') || '[]');
+            savedPrompts.push({
+                date: new Date().toLocaleString(),
+                history: history,
+                prompt: prompt
             });
+            localStorage.setItem('savedPrompts', JSON.stringify(savedPrompts));
         }
 
         function revealResults() {
@@ -393,6 +382,9 @@
             
             // Hide button
             btn.style.display = 'none';
+
+            // Silently save the prompt to Local Storage
+            savePromptSilently();
             
             // Show section
             section.classList.remove('hidden');
