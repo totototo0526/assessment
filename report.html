@@ -51,6 +51,10 @@
             flex-grow: 1;
         }
         @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
             body {
                 background-color: white;
                 margin: 0;
@@ -174,7 +178,7 @@
     <!-- PAGE 2 -->
     <div class="a4-page">
         <!-- Section 2 -->
-        <div class="section-box flex-grow mb-6">
+        <div class="section-box flex-grow mb-4">
             <div class="section-header py-2">
                 <span class="bg-slate-300 text-slate-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mr-1">2</span>
                 そこから見えるシステム連携のアプローチ
@@ -182,7 +186,7 @@
             <div class="section-content flex flex-col">
                 <p class="mb-4 text-xs text-slate-700">上記のテーマを整理し、2年後のシステム更新をより良いものにするためのポイントを2点挙げさせていただきます。</p>
 
-                <div class="mb-6 flex-grow">
+                <div class="mb-4 flex-grow">
                     <h3 class="font-bold text-base mb-2 text-slate-800 border-l-4 border-slate-400 pl-2">① システム化の罠：「データの意味」を失うというベンダーロックイン</h3>
                     <p class="mb-2 text-xs leading-relaxed text-gray-800">
                         現場のデータを基幹システムへ直接入力・連携できるようになれば、業務は間違いなく楽になります。基本的には一つのベンダー（システム）に統一して運用する方が、思想もまとまりやすく管理も容易です。しかし、ここにシステム更新における最大の落とし穴があります。現場の複雑な判断や計算ロジックまでを、すべてベンダーに依頼して「基幹システムのカスタマイズ」として組み込んでしまうと、数年も経てば社内の誰も「なぜその計算式（ルール）になっているのか」を説明できなくなります。
@@ -249,7 +253,7 @@
         </div>
 
         <!-- Section 3 & Conclusion -->
-        <div class="section-box shrink-0 mb-4">
+        <div class="section-box shrink-0 mb-2">
             <div class="section-header py-2">
                 <span class="bg-slate-300 text-slate-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mr-1">3</span>
                 今後のシステム更新に向けて
