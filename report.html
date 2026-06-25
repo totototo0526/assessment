@@ -24,8 +24,6 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
         .section-box {
-            break-inside: avoid;
-            page-break-inside: avoid;
             margin-bottom: 2rem;
             border: 1px solid #cbd5e1;
             border-radius: 0.5rem;
@@ -58,8 +56,12 @@
             .no-print {
                 display: none !important;
             }
-            /* Ensure charts and boxes don't get split awkwardly */
-            .section-box {
+            /* Fine-grained page break control */
+            h2, h3, h4, .section-header {
+                break-after: avoid;
+                page-break-after: avoid;
+            }
+            li, .diagram-grid {
                 break-inside: avoid;
                 page-break-inside: avoid;
             }
@@ -196,7 +198,7 @@
                     <!-- Diagram -->
                     <div class="mb-6 border border-slate-200 rounded-lg p-5 bg-slate-50">
                         <h4 class="text-center font-bold text-base mb-4 tracking-wide text-slate-700">システム活用における「意味（文脈）」の保持</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 diagram-grid">
                             <!-- Bad Pattern -->
                             <div class="bg-white p-4 rounded border-2 border-red-200 flex flex-col">
                                 <div class="flex items-center justify-center gap-1 mb-2 text-red-600">
