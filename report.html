@@ -99,13 +99,18 @@
             </div>
 
             <div class="bg-slate-50 border border-slate-200 p-6 rounded-lg mb-8 flex justify-between items-center">
-                <div>
+                <div class="flex-1">
                     <h2 class="text-2xl font-bold mb-1 text-slate-800">前島食品株式会社 御中</h2>
-                    <h3 class="text-lg text-slate-700">統括本部長 牛尾 様</h3>
+                    <h3 class="text-lg text-slate-700 mb-2">統括本部長 牛尾 様</h3>
+                    <div class="inline-block bg-slate-200 text-slate-700 px-3 py-1 rounded text-sm font-bold">業種: 食品製造業</div>
                 </div>
-                <div class="text-right text-sm text-gray-500">
-                    <div>利用システム: アラジンオフィス</div>
-                    <div>利用歴: 約5年</div>
+                <div class="text-right text-sm text-gray-600 w-1/2">
+                    <div class="font-bold text-slate-800 border-b border-slate-300 pb-1 mb-2 text-left">システム利用状況</div>
+                    <div class="text-left">利用システム: <span class="font-bold">アラジンオフィス</span></div>
+                    <div class="text-left">利用歴: <span class="font-bold">7〜8年</span></div>
+                    <div class="mt-2 text-xs leading-relaxed text-left bg-slate-100 p-2 rounded border border-slate-200">
+                        現在の利用範囲：ほぼ全域。<br>一部連動をしていないが、2年後の更新時に拡充予定。
+                    </div>
                 </div>
             </div>
         </header>
@@ -198,7 +203,7 @@
                     <!-- Diagram -->
                     <div class="mb-6 border border-slate-200 rounded-lg p-5 bg-slate-50">
                         <h4 class="text-center font-bold text-base mb-4 tracking-wide text-slate-700">システム活用における「意味（文脈）」の保持</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 diagram-grid">
+                        <div class="grid grid-cols-2 gap-4 diagram-grid">
                             <!-- Bad Pattern -->
                             <div class="bg-white p-4 rounded border-2 border-red-200 flex flex-col">
                                 <div class="flex items-center justify-center gap-1 mb-2 text-red-600">
@@ -314,7 +319,7 @@
             // Get scores from URL parameters if available, otherwise use mock data for "前島食品"
             const urlParams = new URLSearchParams(window.location.search);
             const scoreParam = urlParams.get('s');
-            let scores = [4, 2, 4, 3, 2]; // Mock data that matches the report's text (strong in some areas, weak in system sharing/inventory linkage)
+            let scores = [5, 4, 5, 4, 3]; // Mock data that matches the report's text
             
             if (scoreParam) {
                 const parsed = scoreParam.split(',').map(n => parseInt(n));
