@@ -16,18 +16,24 @@
         .serif {
             font-family: 'Noto Serif JP', serif;
         }
-        .page {
+        .a4-page {
             background: white;
-            max-width: 210mm;
+            width: 210mm;
+            min-height: 297mm;
             margin: 2rem auto;
-            padding: 20mm;
+            padding: 15mm 20mm;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
         }
         .section-box {
-            margin-bottom: 2rem;
             border: 1px solid #cbd5e1;
             border-radius: 0.5rem;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         .section-header {
             background-color: #f1f5f9;
@@ -42,31 +48,26 @@
         }
         .section-content {
             padding: 1.25rem;
+            flex-grow: 1;
         }
         @media print {
             body {
                 background-color: white;
-            }
-            .page {
                 margin: 0;
-                padding: 10mm;
+            }
+            .a4-page {
+                margin: 0;
                 box-shadow: none;
-                max-width: none;
+                width: 210mm;
+                height: 297mm;
+                page-break-after: always;
+                page-break-inside: avoid;
+            }
+            .a4-page:last-child {
+                page-break-after: auto;
             }
             .no-print {
                 display: none !important;
-            }
-            /* Fine-grained page break control */
-            h2, h3, h4, .section-header {
-                break-after: avoid;
-                page-break-after: avoid;
-            }
-            p, li, .diagram-grid, .bg-amber-50 {
-                break-inside: avoid;
-                page-break-inside: avoid;
-            }
-            .page-break-before {
-                page-break-before: always;
             }
         }
     </style>
@@ -85,227 +86,214 @@
         </button>
     </div>
 
-    <div class="page">
-        <!-- Header Document Title -->
-        <header class="mb-10">
-            <div class="flex justify-between items-end border-b-4 border-slate-800 pb-3 mb-6">
+    <!-- PAGE 1 -->
+    <div class="a4-page">
+        <!-- Header -->
+        <header class="mb-6 shrink-0">
+            <div class="flex justify-between items-end border-b-4 border-slate-800 pb-2 mb-4">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-slate-900 serif">業務・システム運用状況 診断レポート</h1>
+                    <h1 class="text-2xl font-bold tracking-tight text-slate-900 serif">業務・システム運用状況 診断レポート</h1>
                 </div>
-                <div class="text-sm text-gray-600 text-right">
+                <div class="text-xs text-gray-600 text-right">
                     作成日: <span id="currentDate"></span><br>
                     作成者: 上野 圭介
                 </div>
             </div>
 
-            <div class="bg-slate-50 border border-slate-200 p-6 rounded-lg mb-8 flex justify-between items-center">
+            <div class="bg-slate-50 border border-slate-200 p-4 rounded-lg flex justify-between items-center">
                 <div class="flex-1">
-                    <h2 class="text-2xl font-bold mb-1 text-slate-800">前島食品株式会社</h2>
-                    <h3 class="text-lg text-slate-700 mb-2">統括本部長 牛尾 様</h3>
-                    <div class="inline-block bg-slate-200 text-slate-700 px-3 py-1 rounded text-sm font-bold">業種: 食品製造業</div>
+                    <h2 class="text-xl font-bold mb-1 text-slate-800">前島食品株式会社 御中</h2>
+                    <h3 class="text-base text-slate-700 mb-1">統括本部長 牛尾 様</h3>
+                    <div class="inline-block bg-slate-200 text-slate-700 px-2 py-0.5 rounded text-xs font-bold">業種: 食品製造業</div>
                 </div>
-                <div class="text-right text-sm text-gray-600 w-1/2">
-                    <div class="font-bold text-slate-800 border-b border-slate-300 pb-1 mb-2 text-left">システム利用状況</div>
+                <div class="text-right text-xs text-gray-600 w-1/2">
+                    <div class="font-bold text-slate-800 border-b border-slate-300 pb-1 mb-1 text-left">システム利用状況</div>
                     <div class="text-left">利用システム: <span class="font-bold">アラジンオフィス</span></div>
                     <div class="text-left">利用歴: <span class="font-bold">7〜8年</span></div>
-                    <div class="mt-2 text-xs leading-relaxed text-left bg-slate-100 p-2 rounded border border-slate-200">
+                    <div class="mt-1 leading-relaxed text-left bg-slate-100 p-1.5 rounded border border-slate-200">
                         現在の利用範囲：ほぼ全域。<br>一部連動をしていないが、2年後の更新時に拡充予定。
                     </div>
                 </div>
             </div>
         </header>
 
-        <!-- Total Assessment & Radar Chart (Boxed) -->
-        <div class="section-box">
-            <div class="section-header bg-slate-800 text-white border-slate-800">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <!-- Summary & Chart -->
+        <div class="section-box mb-6 shrink-0">
+            <div class="section-header bg-slate-800 text-white border-slate-800 py-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 本日の診断結果サマリー
             </div>
-            <div class="section-content flex flex-col md:flex-row gap-8 items-center">
+            <div class="section-content flex gap-6 items-center py-3">
                 <div class="flex-1">
-                    <p class="leading-relaxed mb-4 text-sm">
-                        先日は現場の貴重なお話を伺う機会をいただき、誠にありがとうございました。
-                    </p>
-                    <p class="leading-relaxed mb-4 text-sm font-medium bg-blue-50 p-3 rounded border border-blue-100 text-slate-800">
+                    <p class="leading-relaxed mb-3 text-xs">先日は現場の貴重なお話を伺う機会をいただき、誠にありがとうございました。</p>
+                    <p class="leading-relaxed mb-3 text-xs font-medium bg-blue-50 p-2 rounded border border-blue-100 text-slate-800">
                         今回のお話を伺う中で最も印象的だったのは、システムを「導入して終わり」にせず、現場への定着と改善を継続されている点でした。紙運用からiPadへの移行や、今後の原価管理・成分表管理の構想などは、現場の状況に合わせて段階的に改善を積み重ねていく姿勢の表れだと強く感銘を受けました。
                     </p>
-                    <p class="leading-relaxed text-sm">
+                    <p class="leading-relaxed text-xs">
                         本レポートでは、今回伺った現場の「現在地」を整理し、2年後のシステム更新に向けた現場とシステムを繋ぐ立場としての見立てをまとめました。右図はヒアリングに基づく運用状況の可視化チャートです。
                     </p>
                 </div>
-                <div class="w-full md:w-1/2 flex justify-center shrink-0">
-                    <div class="w-64 h-64">
-                        <canvas id="reportChart"></canvas>
+                <div class="w-48 h-48 shrink-0">
+                    <canvas id="reportChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 1 -->
+        <div class="section-box flex-grow">
+            <div class="section-header py-2">
+                <span class="bg-slate-300 text-slate-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mr-1">1</span>
+                ヒアリングから見えた「現在地」と「今後のテーマ」
+            </div>
+            <div class="section-content">
+                <p class="mb-4 text-xs text-slate-700">着実にデジタル化が進む中で、システム間の「データの連携」に関する今後のテーマがいくつか見えてまいりました。</p>
+                <div class="grid grid-cols-2 gap-3 h-full">
+                    <div class="bg-slate-50 p-3 rounded border border-slate-100 h-full">
+                        <h3 class="font-bold text-slate-800 text-sm mb-1 flex items-center gap-1"><span class="text-blue-600">■</span> 原価計算・実績管理のさらなる連携</h3>
+                        <p class="text-gray-700 text-xs ml-3 leading-relaxed">現場のiPad等でデータ収集が進んでいる一方、基幹システム（アラジンオフィス）との連動においては、Excelを活用した運用で現場の柔軟性を担保されている状況と拝察いたします。</p>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded border border-slate-100 h-full">
+                        <h3 class="font-bold text-slate-800 text-sm mb-1 flex items-center gap-1"><span class="text-blue-600">■</span> 発注点管理の将来的な活用</h3>
+                        <p class="text-gray-700 text-xs ml-3 leading-relaxed">アラジンの機能として存在するものの、現状は現場運用との兼ね合いからあえて活用されていない状況とのことでした。今後、過去実績データの蓄積や発注ロジックの整理が進むことで、改めて活用可能性を検討できる領域ではないかと感じました。</p>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded border border-slate-100 h-full">
+                        <h3 class="font-bold text-slate-800 text-sm mb-1 flex items-center gap-1"><span class="text-blue-600">■</span> システムの分断</h3>
+                        <p class="text-gray-700 text-xs ml-3 leading-relaxed">現場の衛生管理（iPad）と事務所のシステムが、それぞれ独立して稼働している。</p>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded border border-slate-100 h-full">
+                        <h3 class="font-bold text-slate-800 text-sm mb-1 flex items-center gap-1"><span class="text-blue-600">■</span> 成分表管理の構想</h3>
+                        <p class="text-gray-700 text-xs ml-3 leading-relaxed">今後、成分表のAIシステムによる管理も検討の視野に入っている。</p>
                     </div>
                 </div>
             </div>
         </div>
+        <!-- Page Number -->
+        <div class="text-center text-xs text-gray-400 mt-auto pt-2">1 / 2</div>
+    </div>
 
-        <!-- Section 1 (Boxed) -->
-        <div class="section-box">
-            <div class="section-header">
-                <span class="bg-slate-300 text-slate-800 rounded-full w-6 h-6 flex items-center justify-center text-sm mr-1">1</span>
-                ヒアリングから見えた「現在地」と「今後のテーマ」
-            </div>
-            <div class="section-content">
-                <p class="mb-4 text-sm text-slate-700">着実にデジタル化が進む中で、システム間の「データの連携」に関する今後のテーマがいくつか見えてまいりました。</p>
-                
-                <ul class="space-y-4">
-                    <li class="bg-slate-50 p-4 rounded border border-slate-100">
-                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
-                            <span class="text-blue-600">■</span> 原価計算・実績管理のさらなる連携
-                        </h3>
-                        <p class="text-gray-700 text-sm mt-2 ml-5">現場のiPad等でデータ収集が進んでいる一方、基幹システム（アラジンオフィス）との連動においては、Excelを活用した運用で現場の柔軟性を担保されている状況と拝察いたします。</p>
-                    </li>
-                    <li class="bg-slate-50 p-4 rounded border border-slate-100">
-                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
-                            <span class="text-blue-600">■</span> 発注点管理の将来的な活用
-                        </h3>
-                        <p class="text-gray-700 text-sm mt-2 ml-5">発注点管理については、アラジンの機能として存在するものの、現状は現場運用との兼ね合いからあえて活用されていない状況とのことでした。今後、過去実績データの蓄積や発注ロジックの整理が進むことで、改めて活用可能性を検討できる領域ではないかと感じました。</p>
-                    </li>
-                    <li class="bg-slate-50 p-4 rounded border border-slate-100">
-                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
-                            <span class="text-blue-600">■</span> システムの分断
-                        </h3>
-                        <p class="text-gray-700 text-sm mt-2 ml-5">現場の衛生管理（iPad）と事務所のシステムが、それぞれ独立して稼働している。</p>
-                    </li>
-                    <li class="bg-slate-50 p-4 rounded border border-slate-100">
-                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
-                            <span class="text-blue-600">■</span> 成分表管理の構想
-                        </h3>
-                        <p class="text-gray-700 text-sm mt-2 ml-5">今後、成分表のAIシステムによる管理も検討の視野に入っている。</p>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Section 2 (Boxed) -->
-        <div class="section-box">
-            <div class="section-header">
-                <span class="bg-slate-300 text-slate-800 rounded-full w-6 h-6 flex items-center justify-center text-sm mr-1">2</span>
+    <!-- PAGE 2 -->
+    <div class="a4-page">
+        <!-- Section 2 -->
+        <div class="section-box flex-grow mb-6">
+            <div class="section-header py-2">
+                <span class="bg-slate-300 text-slate-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mr-1">2</span>
                 そこから見えるシステム連携のアプローチ
             </div>
-            <div class="section-content">
-                <p class="mb-6 text-sm text-slate-700">上記のテーマを整理し、2年後のシステム更新をより良いものにするためのポイントを2点挙げさせていただきます。</p>
+            <div class="section-content flex flex-col">
+                <p class="mb-4 text-xs text-slate-700">上記のテーマを整理し、2年後のシステム更新をより良いものにするためのポイントを2点挙げさせていただきます。</p>
 
-                <div class="mb-8">
-                    <h3 class="font-bold text-lg mb-3 text-slate-800 border-l-4 border-slate-400 pl-3">① システム化の罠：「データの意味」を失うというベンダーロックイン</h3>
-                    <p class="mb-3 text-sm leading-relaxed text-gray-800">
-                        現場のデータを基幹システムへ直接入力・連携できるようになれば、業務は間違いなく楽になります。基本的には一つのベンダー（システム）に統一して運用する方が、思想もまとまりやすく管理も容易です。
+                <div class="mb-6 flex-grow">
+                    <h3 class="font-bold text-base mb-2 text-slate-800 border-l-4 border-slate-400 pl-2">① システム化の罠：「データの意味」を失うというベンダーロックイン</h3>
+                    <p class="mb-2 text-xs leading-relaxed text-gray-800">
+                        現場のデータを基幹システムへ直接入力・連携できるようになれば、業務は間違いなく楽になります。基本的には一つのベンダー（システム）に統一して運用する方が、思想もまとまりやすく管理も容易です。しかし、ここにシステム更新における最大の落とし穴があります。現場の複雑な判断や計算ロジックまでを、すべてベンダーに依頼して「基幹システムのカスタマイズ」として組み込んでしまうと、数年も経てば社内の誰も「なぜその計算式（ルール）になっているのか」を説明できなくなります。
                     </p>
-                    <p class="mb-3 text-sm leading-relaxed text-gray-800">
-                        しかし、ここにシステム更新における最大の落とし穴があります。現場の複雑な判断や計算ロジックまでを、すべてベンダーに依頼して「基幹システムのカスタマイズ」として組み込んでしまうと、数年も経てば社内の誰も「なぜその計算式（ルール）になっているのか」を説明できなくなります。
-                    </p>
-                    <p class="mb-6 text-sm leading-relaxed text-gray-800 font-medium">
+                    <p class="mb-4 text-xs leading-relaxed text-gray-800 font-medium">
                         業務をシステム化して楽になることと、その背後にある「データの意味（なぜ）」を忘れていいことは全く別です。自社で業務ルールの意味を把握できなくなれば、結果的に「今のベンダーにお願いし続けるしかない」という強力なベンダーロックインに陥ります。次回のシステム更新に向けて連携範囲を広げる際は、「ベンダーに処理を任せても、そのルールや判断の『理由』は自社で説明できる状態を残す」という意識が非常に重要になります。
                     </p>
 
                     <!-- Diagram -->
-                    <div class="mb-6 border border-slate-200 rounded-lg p-5 bg-slate-50">
-                        <h4 class="text-center font-bold text-base mb-4 tracking-wide text-slate-700">システム活用における「意味（文脈）」の保持</h4>
-                        <div class="grid grid-cols-2 gap-4 diagram-grid">
+                    <div class="mb-4 border border-slate-200 rounded-lg p-4 bg-slate-50">
+                        <h4 class="text-center font-bold text-sm mb-3 tracking-wide text-slate-700">システム活用における「意味（文脈）」の保持</h4>
+                        <div class="grid grid-cols-2 gap-4">
                             <!-- Bad Pattern -->
-                            <div class="bg-white p-4 rounded border-2 border-red-200 flex flex-col">
+                            <div class="bg-white p-3 rounded border-2 border-red-200 flex flex-col">
                                 <div class="flex items-center justify-center gap-1 mb-2 text-red-600">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                    <h5 class="font-bold text-sm">システムに「お任せ」</h5>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    <h5 class="font-bold text-xs">システムに「お任せ」</h5>
                                 </div>
-                                <div class="bg-gray-100 p-2 rounded text-center text-xs font-bold text-gray-700 mb-3 border border-gray-200">
+                                <div class="bg-gray-100 p-1.5 rounded text-center text-[11px] font-bold text-gray-700 mb-2 border border-gray-200">
                                     現場の判断・ルールを<br>システムに丸ごと組み込む
                                 </div>
-                                <p class="text-xs text-gray-600 leading-relaxed mb-3 grow">
-                                    日々の業務は楽になるが、<br>
-                                    <strong class="text-gray-900">「なぜこのロジックなのか」</strong>が<br>ブラックボックス化する。
+                                <p class="text-[11px] text-gray-600 leading-relaxed mb-2 grow">
+                                    日々の業務は楽になるが、<strong class="text-gray-900">「なぜこのロジックなのか」</strong>がブラックボックス化する。
                                 </p>
-                                <div class="bg-red-50 p-2 rounded border border-red-100 mt-auto text-xs">
-                                    <span class="text-red-700 font-bold block mb-1">【結果】</span>
+                                <div class="bg-red-50 p-1.5 rounded border border-red-100 mt-auto text-[11px]">
+                                    <span class="text-red-700 font-bold block mb-0.5">【結果】</span>
                                     <span class="text-red-900 font-medium">ベンダーに「意味」を奪われ、載せ替え時に身動きが取れなくなる。</span>
                                 </div>
                             </div>
                             
                             <!-- Good Pattern -->
-                            <div class="bg-white p-4 rounded border-2 border-green-300 flex flex-col relative overflow-hidden">
-                                <div class="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl">推奨</div>
+                            <div class="bg-white p-3 rounded border-2 border-green-300 flex flex-col relative overflow-hidden">
+                                <div class="absolute top-0 right-0 bg-green-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-bl">推奨</div>
                                 <div class="flex items-center justify-center gap-1 mb-2 text-green-600">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                    <h5 class="font-bold text-sm">「意味」を自社で握る</h5>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <h5 class="font-bold text-xs">「意味」を自社で握る</h5>
                                 </div>
-                                <div class="bg-gray-100 p-2 rounded text-center text-xs font-bold text-gray-700 mb-3 border border-gray-200">
+                                <div class="bg-gray-100 p-1.5 rounded text-center text-[11px] font-bold text-gray-700 mb-2 border border-gray-200">
                                     システムに処理させつつ<br>判断基準は自社で保持
                                 </div>
-                                <p class="text-xs text-gray-600 leading-relaxed mb-3 grow">
-                                    システムはあくまで道具と割り切り、<br>
-                                    <strong class="text-gray-900">「なぜこのルールなのか」</strong>を<br>ドキュメントや運用基準として残す。
+                                <p class="text-[11px] text-gray-600 leading-relaxed mb-2 grow">
+                                    システムはあくまで道具と割り切り、<strong class="text-gray-900">「なぜこのルールなのか」</strong>をドキュメントや運用基準として残す。
                                 </p>
-                                <div class="bg-green-50 p-2 rounded border border-green-200 mt-auto text-xs">
-                                    <span class="text-green-700 font-bold block mb-1">【結果】</span>
+                                <div class="bg-green-50 p-1.5 rounded border border-green-200 mt-auto text-[11px]">
+                                    <span class="text-green-700 font-bold block mb-0.5">【結果】</span>
                                     <span class="text-green-900 font-medium">判断軸を自社で保持するため、柔軟な載せ替えや進化が可能になる。</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <p class="text-sm leading-relaxed text-gray-800">
+                    <p class="text-xs leading-relaxed text-gray-800">
                         もし、現場の柔軟な運用（手心）を基幹システムに合わせるのが難しい場合は、無理にシステム本体をカスタマイズするのではなく、現場のデータとシステムの間を「CSVの取り込み」などでシンプルに繋ぐ（緩衝地帯を設ける）ことも、自社のノウハウを守るための現実的な選択肢の一つだと考えております。
                     </p>
                 </div>
 
                 <div>
-                    <h3 class="font-bold text-lg mb-3 text-slate-800 border-l-4 border-slate-400 pl-3">② 現場で自然に集まるデータを繋ぎ合わせる</h3>
-                    <p class="text-sm leading-relaxed text-gray-800">
+                    <h3 class="font-bold text-base mb-2 text-slate-800 border-l-4 border-slate-400 pl-2">② 現場で自然に集まるデータを繋ぎ合わせる</h3>
+                    <p class="text-xs leading-relaxed text-gray-800">
                         システム連携を考える際、現場に新しい入力ルールや仕組みを増やすことは、どれほど有効であっても定着の妨げになる場合があります。一方で、既に運用されているiPad入力や日報、受発注データなどには、すでに多くの生きた情報が蓄積されています。新しい仕組みを導入する前に、まずは現在存在しているデータ同士を自然に結び付ける（CSVで連携させる等）ことで、現場の動線を変えずに想像以上の改善ヒントが得られる可能性があります。
                     </p>
                 </div>
             </div>
         </div>
 
-        <!-- Section 3 (Boxed) -->
-        <div class="section-box">
-            <div class="section-header">
-                <span class="bg-slate-300 text-slate-800 rounded-full w-6 h-6 flex items-center justify-center text-sm mr-1">3</span>
+        <!-- Section 3 & Conclusion -->
+        <div class="section-box shrink-0 mb-4">
+            <div class="section-header py-2">
+                <span class="bg-slate-300 text-slate-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mr-1">3</span>
                 今後のシステム更新に向けて
             </div>
             <div class="section-content">
-                <p class="mb-4 text-sm leading-relaxed text-gray-800">
-                    前島食品様のように、季節変動や商品特性への細やかな対応を行われている現場においては、長年培われてきた判断基準の中に「必ずしもシステムへ置き換えることが最適とは言えないもの」が存在するかと思います。
-                </p>
-                <p class="mb-5 text-sm leading-relaxed text-gray-800">
-                    そのため、システム更新時には新しい機能を追加したくなるものですが、<strong class="text-blue-700 bg-blue-50 px-1">「何をシステム化するか」だけでなく、「何をあえてシステム化しないか」を明確にすること</strong>が重要だと考えております。
+                <p class="mb-3 text-xs leading-relaxed text-gray-800">
+                    前島食品様のように、季節変動や商品特性への細やかな対応を行われている現場においては、長年培われてきた判断基準の中に「必ずしもシステムへ置き換えることが最適とは言えないもの」が存在するかと思います。そのため、システム更新時には新しい機能を追加したくなるものですが、<strong class="text-blue-700 bg-blue-50 px-1">「何をシステム化するか」だけでなく、「何をあえてシステム化しないか」を明確にすること</strong>が重要だと考えております。
                 </p>
 
-                <div class="flex gap-4 mb-5 items-center justify-center px-8">
-                    <div class="flex-1 bg-white border-2 border-slate-300 p-3 rounded-lg text-center shadow-sm">
-                        <span class="font-bold text-slate-700 text-sm">システムが得意な領域</span>
+                <div class="flex gap-4 mb-3 items-center justify-center px-12">
+                    <div class="flex-1 bg-white border-2 border-slate-300 py-1.5 rounded-lg text-center shadow-sm">
+                        <span class="font-bold text-slate-700 text-xs">システムが得意な領域</span>
                     </div>
                     <div class="text-slate-400">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
                     </div>
-                    <div class="flex-1 bg-white border-2 border-slate-300 p-3 rounded-lg text-center shadow-sm">
-                        <span class="font-bold text-slate-700 text-sm">人が判断した方が良い領域</span>
+                    <div class="flex-1 bg-white border-2 border-slate-300 py-1.5 rounded-lg text-center shadow-sm">
+                        <span class="font-bold text-slate-700 text-xs">人が判断した方が良い領域</span>
                     </div>
                 </div>
 
-                <p class="mb-6 text-sm leading-relaxed text-gray-800">
+                <p class="mb-4 text-xs leading-relaxed text-gray-800">
                     この2つを整理しながら設計を進めることで、現場負荷を抑えつつ、より高い効果が期待できると考えます。今回のお話からは、そのバランス感覚をすでに十分お持ちであるように感じましたが、更新時には改めて重要になる視点ではないかと感じました。
                 </p>
 
-                <div class="bg-amber-50 border border-amber-200 p-4 rounded text-sm">
-                    <h4 class="font-bold text-amber-800 mb-2 flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <div class="bg-amber-50 border border-amber-200 p-3 rounded text-xs">
+                    <h4 class="font-bold text-amber-800 mb-1 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         【補足】AI活用について
                     </h4>
-                    <p class="text-amber-900 leading-relaxed text-xs">
-                        今回のお話の中で、成分表管理へのAI活用についても検討されているとのお話を伺いました。一般的には「需要予測」や「発注予測」といった用途が注目されがちですが、実際の現場では、法改正や表示ルール変更への対応、複数データの整合性確認など、人間が判断に時間を取られている業務の支援に活用する方が、高い効果を発揮する場合もあります。AIを導入すること自体を目的とするのではなく、「どの業務の負荷を下げるか」という視点から検討されている点は非常に現実的であり、今後の取り組みとしても大変興味深いと感じました。
+                    <p class="text-amber-900 leading-relaxed text-[11px]">
+                        成分表管理へのAI活用についても検討されているとのお話を伺いました。一般的には「需要予測」や「発注予測」といった用途が注目されがちですが、実際の現場では、法改正や表示ルール変更への対応、複数データの整合性確認など、人間が判断に時間を取られている業務の支援に活用する方が、高い効果を発揮する場合もあります。AIを導入すること自体を目的とするのではなく、「どの業務の負荷を下げるか」という視点から検討されている点は非常に現実的であり、今後の取り組みとしても大変興味深いと感じました。
                     </p>
                 </div>
             </div>
         </div>
 
-        <!-- Conclusion -->
-        <div class="mt-8 text-center text-sm text-slate-600 pb-4">
-            <p class="mb-2 font-bold text-slate-800">結びにかえて</p>
-            <p>弊社としても、現在のExcel作業の整理や、現場とシステムの「繋ぎ目」、<br>そして新たな技術の現実的な活用について、壁打ち相手が必要な際はお気軽にお声がけください。</p>
+        <div class="mt-auto text-center text-xs text-slate-600 border-t border-slate-200 pt-3">
+            <p class="mb-1 font-bold text-slate-800">結びにかえて</p>
+            <p>弊社としても、現在のExcel作業の整理や、現場とシステムの「繋ぎ目」、新たな技術の現実的な活用について、壁打ち相手が必要な際はお気軽にお声がけください。</p>
         </div>
+
+        <!-- Page Number -->
+        <div class="text-center text-xs text-gray-400 mt-2">2 / 2</div>
     </div>
 
     <script>
@@ -316,10 +304,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             const ctx = document.getElementById('reportChart').getContext('2d');
             
-            // Get scores from URL parameters if available, otherwise use mock data for "前島食品"
             const urlParams = new URLSearchParams(window.location.search);
             const scoreParam = urlParams.get('s');
-            let scores = [5, 4, 5, 4, 3]; // Mock data that matches the report's text
+            let scores = [5, 4, 5, 4, 3]; 
             
             if (scoreParam) {
                 const parsed = scoreParam.split(',').map(n => parseInt(n));
@@ -333,9 +320,9 @@
                     datasets: [{
                         label: '成熟度スコア',
                         data: scores,
-                        backgroundColor: 'rgba(59, 130, 246, 0.2)', // Tailwind blue-500 with opacity
-                        borderColor: 'rgba(59, 130, 246, 1)', // Tailwind blue-500
-                        pointBackgroundColor: 'rgba(30, 64, 175, 1)', // Tailwind blue-800
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        pointBackgroundColor: 'rgba(30, 64, 175, 1)',
                         pointBorderColor: '#fff',
                         pointHoverBackgroundColor: '#fff',
                         pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
@@ -349,24 +336,11 @@
                         r: {
                             min: 0,
                             max: 5,
-                            ticks: {
-                                stepSize: 1,
-                                display: false
-                            },
-                            pointLabels: {
-                                font: {
-                                    size: 11,
-                                    family: "'Noto Sans JP', sans-serif"
-                                },
-                                color: '#475569'
-                            }
+                            ticks: { stepSize: 1, display: false },
+                            pointLabels: { font: { size: 9, family: "'Noto Sans JP', sans-serif" }, color: '#475569' }
                         }
                     },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
+                    plugins: { legend: { display: false } }
                 }
             });
         });
