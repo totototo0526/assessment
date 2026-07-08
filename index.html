@@ -132,7 +132,9 @@
                 
                 <div class="consultant-hint mb-6 w-full bg-consultant-900/30 border-l-4 border-consultant-500 p-4 rounded text-sm text-gray-200">
                     <p class="font-bold text-consultant-400 mb-2">🗣️ トークスクリプト（鏡を見せて引く）</p>
-                    「今日お聞きした内容を整理すると、こんなイメージです。<span class="dynamic-sys-name font-bold text-brand-300">現行システム</span>を使いこなされている一方で、いくつかの領域で『現場の皆様の経験や判断力』でカバーされている（人間に依存している）部分があるように感じました。」
+                    <div id="dynamicTalkScript" class="leading-relaxed">
+                        「今日お聞きした内容を整理すると、こんなイメージです。<span class="dynamic-sys-name font-bold text-brand-300">現行システム</span>を使いこなされている一方で、いくつかの領域で『現場の皆様の経験や判断力』でカバーされている（人間に依存している）部分があるように感じました。」
+                    </div>
                 </div>
 
                 <div class="w-full max-w-lg mt-4 relative">
@@ -243,6 +245,37 @@
                     </div>
                 </div>`;
             }).join('');
+
+            // Render Aggregated Followups for Consultant Mode
+            const aggContainer = document.getElementById('aggregatedFollowups');
+            if (aggContainer) {
+                let hasFollowups = false;
+                let followupsHtml = `<p class="font-bold text-consultant-400 mb-4 text-base flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                    深掘り用カンペ（診断結果を見せる前の最終確認）
+                </p><div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+                
+                appointmentQuestions.forEach((q, i) => {
+                    if (q.followups && q.followups.length > 0) {
+                        hasFollowups = true;
+                        followupsHtml += `
+                        <div class="bg-slate-800/50 p-3 rounded border border-slate-700/50">
+                            <span class="text-brand-300 font-bold text-xs block mb-1">Q${i+1}. ${q.label}</span>
+                            <ul class="list-disc list-inside text-gray-300 text-xs space-y-1 ml-1">
+                                ${q.followups.map(f => `<li>${f}</li>`).join('')}
+                            </ul>
+                        </div>`;
+                    }
+                });
+                followupsHtml += `</div>`;
+                
+                if (hasFollowups) {
+                    aggContainer.innerHTML = followupsHtml;
+                    aggContainer.classList.remove('hidden');
+                } else {
+                    aggContainer.classList.add('hidden');
+                }
+            }
         }
 
         function updateScore(index, val) {
@@ -326,13 +359,38 @@
         function revealResults() {
             document.getElementById('revealBtn').style.display = 'none';
             saveToServerSilently();
+            document.getElementById('resultsSection').classList.remove('hidden');
+            document.getElementById('resultsSection').classList.remove('opacity-0');
             
-            const section = document.getElementById('resultsSection');
-            section.classList.remove('hidden');
+            // Dynamic Talk Script Generation
+            const scores = Array.from(document.querySelectorAll('input[type="range"]')).map(el => parseInt(el.value));
+            let strengths = [];
+            let weaknesses = [];
             
+            appointmentQuestions.forEach((q, i) => {
+                if (scores[i] >= 4) strengths.push(q.label);
+                if (scores[i] <= 2) weaknesses.push(q.label);
+            });
+            
+            const sysName = document.getElementById('systemName').value.trim() || '現行システム';
+            let scriptHtml = `「今日お聞きした内容を整理すると、こんなイメージです。<br><br>`;
+            
+            if (strengths.length > 0 && weaknesses.length > 0) {
+                scriptHtml += `<strong><span class="text-green-400">${strengths.join('や')}</span></strong> などは <span class="font-bold text-brand-300">${sysName}</span> をうまく使いこなされている一方で、<br>`;
+                scriptHtml += `<strong><span class="text-red-400">${weaknesses.join('や')}</span></strong> の領域では『現場の皆様の経験や判断力』でカバーされている（人間に依存している）部分があるように感じました。」`;
+            } else if (strengths.length > 0) {
+                scriptHtml += `全体的に <span class="font-bold text-brand-300">${sysName}</span> を非常にうまく使いこなされており、特に <strong><span class="text-green-400">${strengths.join('や')}</span></strong> の領域は素晴らしいシステム化を実現されていると感じました。」`;
+            } else if (weaknesses.length > 0) {
+                scriptHtml += `全体的に <strong><span class="text-red-400">${weaknesses.join('や')}</span></strong> をはじめとして、多くの領域で『現場の皆様の経験や判断力』でカバーされている（人間に依存している）部分が大きいように感じました。」`;
+            } else {
+                scriptHtml += `<span class="font-bold text-brand-300">${sysName}</span> をベースに標準的な運用をされていますが、まだシステム化や自動化による改善余地が眠っているように感じました。」`;
+            }
+            
+            const scriptEl = document.getElementById('dynamicTalkScript');
+            if (scriptEl) scriptEl.innerHTML = scriptHtml;
+
             setTimeout(() => {
-                section.classList.remove('opacity-0');
-                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
                 
                 const currentData = Array.from(document.querySelectorAll('input[type="range"]')).map(el => parseInt(el.value));
                 const labels = appointmentQuestions.map(q => q.label);
