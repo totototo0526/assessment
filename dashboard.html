@@ -38,10 +38,16 @@
                 <h1 class="text-3xl md:text-4xl font-bold mb-2 text-white">アポイント管理</h1>
                 <p class="text-gray-400">訪問先の事前入力と履歴の管理</p>
             </div>
-            <button onclick="document.getElementById('createModal').classList.remove('hidden')" class="bg-brand-600 hover:bg-brand-500 text-white font-bold py-2 px-6 rounded-lg shadow transition flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                新規アポイント作成
-            </button>
+            <div class="flex gap-3">
+                <button onclick="document.getElementById('templateModal').classList.remove('hidden')" class="bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white font-bold py-2 px-4 rounded-lg shadow transition flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    テンプレート管理
+                </button>
+                <button onclick="document.getElementById('createModal').classList.remove('hidden')" class="bg-brand-600 hover:bg-brand-500 text-white font-bold py-2 px-6 rounded-lg shadow transition flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    新規アポイント作成
+                </button>
+            </div>
         </header>
 
         <div class="glass-panel rounded-2xl p-6 shadow-xl">
@@ -83,16 +89,51 @@
                     <label class="block text-sm font-medium text-gray-300 mb-1">既存システム名</label>
                     <input type="text" id="newSystem" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:border-brand-500 outline-none">
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">ヒアリングテンプレート</label>
+                    <select id="newTemplate" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:border-brand-500 outline-none">
+                        <option value="">読込中...</option>
+                    </select>
+                </div>
                 <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-700">
                     <button type="button" onclick="document.getElementById('createModal').classList.add('hidden')" class="px-4 py-2 text-gray-300 hover:text-white transition">キャンセル</button>
                     <button type="submit" class="bg-brand-600 hover:bg-brand-500 px-6 py-2 rounded-lg text-white font-bold transition">作成</button>
                 </div>
             </form>
         </div>
+    </div> <!-- /createModal -->
+
+    <!-- Create/Edit Template Modal -->
+    <div id="templateModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 rounded-xl p-6 w-full max-w-4xl shadow-2xl border border-slate-700 max-h-[90vh] h-[85vh] flex flex-col">
+            <h2 class="text-xl font-bold text-white mb-2">テンプレートの登録・編集</h2>
+            
+            <div class="mb-4 p-3 bg-gray-900/50 rounded-lg border border-gray-700">
+                <label class="block text-xs font-medium text-gray-400 mb-1">▼ 既存のテンプレートを編集する場合</label>
+                <select id="editTemplateSelect" onchange="loadTemplateToEdit()" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm text-gray-300 outline-none focus:border-brand-500">
+                    <option value="">-- 新規作成 --</option>
+                </select>
+            </div>
+
+            <form id="templateForm" class="space-y-4 flex-1 flex flex-col min-h-0">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">ファイル名 (英数字推奨)</label>
+                    <input type="text" id="tplFilename" placeholder="例: retail.yml" required class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:border-brand-500 outline-none font-mono">
+                </div>
+                <div class="flex-1 flex flex-col min-h-0">
+                    <label class="block text-sm font-medium text-gray-300 mb-1">YAML本文</label>
+                    <textarea id="tplContent" required class="w-full flex-1 bg-slate-900 border border-slate-600 rounded-lg p-4 text-white focus:border-brand-500 outline-none font-mono text-sm resize-y min-h-[300px]" placeholder="name: &quot;テンプレート名&quot;&#10;questions:&#10;  - id: &quot;q1&quot;..."></textarea>
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-700 mt-auto">
+                    <button type="button" onclick="document.getElementById('templateModal').classList.add('hidden')" class="px-4 py-2 text-gray-300 hover:text-white transition">キャンセル</button>
+                    <button type="submit" class="bg-gray-600 hover:bg-gray-500 px-6 py-2 rounded-lg text-white font-bold transition">保存する</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
-        const API_URL = '/api/appointments';
+        const API_URL = 'http://localhost:3001/api/appointments';
 
         async function loadAppointments() {
             try {
@@ -130,12 +171,54 @@
             }
         }
 
+        async function loadTemplates() {
+            try {
+                const res = await fetch('http://localhost:3001/api/templates');
+                if (res.ok) {
+                    const templates = await res.json();
+                    
+                    // Update New Appointment Dropdown
+                    const select = document.getElementById('newTemplate');
+                    select.innerHTML = templates.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+
+                    // Update Edit Template Dropdown
+                    const editSelect = document.getElementById('editTemplateSelect');
+                    editSelect.innerHTML = '<option value="">-- 新規作成 --</option>' + templates.map(t => `<option value="${t.id}">${t.id} (${t.name})</option>`).join('');
+                }
+            } catch (err) {
+                console.error("Failed to load templates", err);
+                document.getElementById('newTemplate').innerHTML = '<option value="default.yml">デフォルトテンプレート</option>';
+            }
+        }
+
+        async function loadTemplateToEdit() {
+            const filename = document.getElementById('editTemplateSelect').value;
+            if (!filename) {
+                document.getElementById('templateForm').reset();
+                return;
+            }
+            try {
+                // Fetch raw YAML file
+                const res = await fetch(`http://localhost:3001/templates/${filename}`);
+                if (res.ok) {
+                    const yamlText = await res.text();
+                    document.getElementById('tplFilename').value = filename;
+                    document.getElementById('tplContent').value = yamlText;
+                } else {
+                    alert('テンプレートの読み込みに失敗しました');
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
         document.getElementById('createForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const payload = {
                 companyName: document.getElementById('newCompany').value,
                 targetName: document.getElementById('newTarget').value,
-                systemName: document.getElementById('newSystem').value
+                systemName: document.getElementById('newSystem').value,
+                templateId: document.getElementById('newTemplate').value
             };
 
             try {
@@ -149,14 +232,47 @@
                     document.getElementById('createModal').classList.add('hidden');
                     document.getElementById('createForm').reset();
                     loadAppointments();
+                } else {
+                    alert('サーバーエラーが発生しました（ステータス: ' + res.status + '）。サーバーが起動しているか確認してください。');
                 }
             } catch (err) {
-                alert('作成に失敗しました。');
+                console.error(err);
+                alert('作成に失敗しました。サーバー(http://localhost:3001)に接続できません。');
+            }
+        });
+
+        document.getElementById('templateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                filename: document.getElementById('tplFilename').value,
+                content: document.getElementById('tplContent').value
+            };
+
+            try {
+                const res = await fetch('http://localhost:3001/api/templates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (res.ok) {
+                    alert('テンプレートを保存しました！');
+                    document.getElementById('templateModal').classList.add('hidden');
+                    document.getElementById('templateForm').reset();
+                    loadTemplates(); // Refresh dropdown
+                } else {
+                    const err = await res.json();
+                    alert('保存に失敗しました: ' + (err.error || res.status));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('通信エラーが発生しました。');
             }
         });
 
         // Initialize
         loadAppointments();
+        loadTemplates();
     </script>
 </body>
 </html>
