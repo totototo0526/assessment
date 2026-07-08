@@ -111,7 +111,11 @@
                 <div class="text-center text-gray-400 py-8">テンプレート読込中...</div>
             </form>
 
-            <div class="mt-12 text-center">
+            <div class="mt-12 text-center flex flex-col items-center">
+                <!-- Aggregated Followups (Consultant Mode Only) -->
+                <div id="aggregatedFollowups" class="consultant-hint bg-consultant-900/30 border-l-4 border-consultant-500 p-6 rounded-xl text-sm text-gray-200 text-left mb-8 w-full max-w-3xl hidden shadow-lg">
+                </div>
+
                 <button id="revealBtn" onclick="revealResults()" class="bg-gradient-to-r from-purple-600 to-brand-600 hover:from-purple-500 hover:to-brand-500 text-white font-bold py-4 px-8 rounded-full shadow-lg transform transition hover:scale-105">
                     診断結果を提示する（鏡を見せる）
                 </button>
@@ -156,6 +160,7 @@
         const API_URL = 'http://localhost:3001/api/appointments';
         let currentAppointmentId = null;
         let appointmentQuestions = [];
+        let templateMetadata = {};
         let radarChart = null;
 
         function toggleConsultantMode() {
@@ -196,6 +201,7 @@
                         updateSystemLabels();
                         
                         appointmentQuestions = data.questions || [];
+                        templateMetadata = data.templateMetadata || {};
                         renderDynamicForm(data.scores || []);
                     }
                 } catch (e) {
@@ -259,12 +265,40 @@
 
             const scores = Array.from(document.querySelectorAll('input[type="range"]')).map(el => parseInt(el.value));
             
-            const prompt = `あなたは業務改善コンサルタントです。
-以下のヒアリング結果から、現状の定着度合いと属人化リスクを分析してください。
+            // V2 YAML Support: Build an advanced prompt using metadata
+            let prompt = `あなたは業務改善コンサルタントです。\n以下のヒアリング結果から、現状の定着度合いと属人化リスクを分析してください。\n\n`;
+            
+            if (templateMetadata.target) {
+                prompt += `■ クライアント前提条件\n`;
+                if (templateMetadata.target.industry) prompt += `・業種: ${templateMetadata.target.industry}\n`;
+                if (templateMetadata.target.employees) prompt += `・規模: ${templateMetadata.target.employees}\n`;
+                if (templateMetadata.target.system) prompt += `・システム: ${templateMetadata.target.system}\n`;
+                prompt += `\n`;
+            }
 
-■ スコア（1:属人化 〜 5:システム完結）
-${appointmentQuestions.map((q, i) => `・${q.label}：${scores[i]}点`).join('\n')}
-`;
+            if (templateMetadata.report && templateMetadata.report.score) {
+                prompt += `■ 評価基準\n`;
+                for (const [range, evalText] of Object.entries(templateMetadata.report.score)) {
+                    prompt += `・${range}点: ${evalText}\n`;
+                }
+                prompt += `\n`;
+            }
+
+            prompt += `■ ヒアリング結果（1:属人化 〜 5:システム完結）\n`;
+            appointmentQuestions.forEach((q, i) => {
+                const s = scores[i];
+                prompt += `【${q.label}】スコア: ${s}点\n`;
+                
+                // Add Risk/Opportunity if present
+                if (q.risk && Array.isArray(q.risk)) prompt += `  [潜在リスク] ${q.risk.join(', ')}\n`;
+                if (q.opportunity && Array.isArray(q.opportunity)) prompt += `  [改善機会] ${q.opportunity.join(', ')}\n`;
+                
+                // Add Score-based recommendation if present
+                if (q.recommendation && q.recommendation[s]) {
+                    const recs = Array.isArray(q.recommendation[s]) ? q.recommendation[s].join(' / ') : q.recommendation[s];
+                    prompt += `  [推奨アクション] ${recs}\n`;
+                }
+            });
 
             const payload = {
                 companyName: document.getElementById('companyName').value,

@@ -125,15 +125,48 @@
                     <textarea id="tplContent" required class="w-full flex-1 bg-slate-900 border border-slate-600 rounded-lg p-4 text-white focus:border-brand-500 outline-none font-mono text-sm resize-y min-h-[300px]" placeholder="name: &quot;テンプレート名&quot;&#10;questions:&#10;  - id: &quot;q1&quot;&#10;    label: &quot;質問項目&quot;&#10;    feedbacks:&#10;      1: &quot;1の時のコメント&quot;&#10;      5: &quot;5の時のコメント&quot;..."></textarea>
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t border-slate-700 mt-auto">
+                    <button type="button" id="deleteTplBtn" onclick="deleteTemplate()" class="hidden bg-red-900/60 hover:bg-red-600 text-red-200 hover:text-white px-4 py-2 rounded-lg font-bold transition mr-auto border border-red-800">削除する</button>
                     <button type="button" onclick="document.getElementById('templateModal').classList.add('hidden')" class="px-4 py-2 text-gray-300 hover:text-white transition">キャンセル</button>
                     <button type="submit" class="bg-gray-600 hover:bg-gray-500 px-6 py-2 rounded-lg text-white font-bold transition">保存する</button>
                 </div>
             </form>
         </div>
     </div>
-
+    <!-- Edit Appointment Modal -->
+    <div id="editApptModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 rounded-xl p-6 w-full max-w-md shadow-2xl border border-slate-700">
+            <h2 class="text-xl font-bold text-white mb-4">アポイントの編集</h2>
+            <form id="editApptForm" class="space-y-4">
+                <input type="hidden" id="editApptId">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">企業名</label>
+                    <input type="text" id="editCompany" required class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:border-brand-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">対象者名</label>
+                    <input type="text" id="editTarget" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:border-brand-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">既存システム名</label>
+                    <input type="text" id="editSystem" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:border-brand-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">ヒアリングテンプレート</label>
+                    <select id="editTemplate" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:border-brand-500 outline-none">
+                    </select>
+                </div>
+                <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-700">
+                    <button type="button" onclick="deleteAppointment()" class="bg-red-900/60 hover:bg-red-600 text-red-200 px-4 py-2 rounded-lg font-bold transition mr-auto border border-red-800">削除する</button>
+                    <button type="button" onclick="document.getElementById('editApptModal').classList.add('hidden')" class="px-4 py-2 text-gray-300 hover:text-white transition">キャンセル</button>
+                    <button type="submit" class="bg-brand-600 hover:bg-brand-500 px-6 py-2 rounded-lg text-white font-bold transition">保存する</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <script>
         const API_URL = 'http://localhost:3001/api/appointments';
+        let currentAppointments = [];
 
         async function loadAppointments() {
             try {
@@ -147,7 +180,15 @@
                     return;
                 }
 
-                tbody.innerHTML = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(apt => `
+                currentAppointments = data;
+                
+                const sortedData = data.sort((a, b) => {
+                    if (a.status === 'pending' && b.status !== 'pending') return -1;
+                    if (a.status !== 'pending' && b.status === 'pending') return 1;
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                });
+
+                tbody.innerHTML = sortedData.map(apt => `
                     <tr class="hover:bg-gray-800/30 transition">
                         <td class="px-4 py-4 font-medium text-white">${apt.companyName || '未入力'}</td>
                         <td class="px-4 py-4 text-gray-300">${apt.targetName || '-'}</td>
@@ -157,11 +198,14 @@
                                 ? '<span class="bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs border border-green-500/30">ヒアリング済</span>' 
                                 : '<span class="bg-brand-500/20 text-brand-400 px-2 py-1 rounded text-xs border border-brand-500/30">未実施</span>'}
                         </td>
-                        <td class="px-4 py-4 text-right">
-                            <a href="index.html?id=${apt.id}" class="inline-flex items-center gap-1 text-brand-400 hover:text-brand-300 font-medium transition">
-                                ${apt.status === 'completed' ? '結果を確認' : 'ヒアリング開始'} 
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                            </a>
+                        <td class="px-4 py-4">
+                            <div class="flex justify-end gap-4 items-center">
+                                <button onclick="openEditApptModal('${apt.id}')" class="text-gray-400 hover:text-white text-sm transition">編集</button>
+                                <a href="index.html?id=${apt.id}" class="inline-flex items-center gap-1 text-brand-400 hover:text-brand-300 font-medium transition whitespace-nowrap">
+                                    ${apt.status === 'completed' ? '結果を確認' : 'ヒアリング開始'} 
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 `).join('');
@@ -177,13 +221,19 @@
                 if (res.ok) {
                     const templates = await res.json();
                     
+                    const htmlOpts = templates.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+                    
                     // Update New Appointment Dropdown
                     const select = document.getElementById('newTemplate');
-                    select.innerHTML = templates.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+                    select.innerHTML = htmlOpts;
+
+                    // Update Edit Appointment Dropdown
+                    const editSelect = document.getElementById('editTemplate');
+                    editSelect.innerHTML = htmlOpts;
 
                     // Update Edit Template Dropdown
-                    const editSelect = document.getElementById('editTemplateSelect');
-                    editSelect.innerHTML = '<option value="">-- 新規作成 --</option>' + templates.map(t => `<option value="${t.id}">${t.id} (${t.name})</option>`).join('');
+                    const editTplSelect = document.getElementById('editTemplateSelect');
+                    editTplSelect.innerHTML = '<option value="">-- 新規作成 --</option>' + templates.map(t => `<option value="${t.id}">${t.id} (${t.name})</option>`).join('');
                 }
             } catch (err) {
                 console.error("Failed to load templates", err);
@@ -193,17 +243,25 @@
 
         async function loadTemplateToEdit() {
             const filename = document.getElementById('editTemplateSelect').value;
+            const delBtn = document.getElementById('deleteTplBtn');
             if (!filename) {
                 document.getElementById('templateForm').reset();
+                delBtn.classList.add('hidden');
                 return;
             }
             try {
-                // Fetch raw YAML file
                 const res = await fetch(`http://localhost:3001/templates/${filename}`);
                 if (res.ok) {
                     const yamlText = await res.text();
                     document.getElementById('tplFilename').value = filename;
                     document.getElementById('tplContent').value = yamlText;
+                    
+                    // Show delete button but protect default.yml
+                    if (filename === 'default.yml') {
+                        delBtn.classList.add('hidden');
+                    } else {
+                        delBtn.classList.remove('hidden');
+                    }
                 } else {
                     alert('テンプレートの読み込みに失敗しました');
                 }
@@ -212,8 +270,38 @@
             }
         }
 
+        async function deleteTemplate() {
+            const filename = document.getElementById('tplFilename').value;
+            if (!filename || filename === 'default.yml') return;
+            
+            if (!confirm(`テンプレート「${filename}」を削除してもよろしいですか？\n※この操作は取り消せません。`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`http://localhost:3001/api/templates/${filename}`, {
+                    method: 'DELETE'
+                });
+                
+                if (res.ok) {
+                    alert('削除しました。');
+                    document.getElementById('templateForm').reset();
+                    document.getElementById('deleteTplBtn').classList.add('hidden');
+                    loadTemplates();
+                } else {
+                    alert('削除に失敗しました。');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('通信エラーが発生しました。');
+            }
+        }
+
         document.getElementById('createForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
             const payload = {
                 companyName: document.getElementById('newCompany').value,
                 targetName: document.getElementById('newTarget').value,
@@ -238,11 +326,17 @@
             } catch (err) {
                 console.error(err);
                 alert('作成に失敗しました。サーバー(http://localhost:3001)に接続できません。');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         });
 
         document.getElementById('templateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
             const payload = {
                 filename: document.getElementById('tplFilename').value,
                 content: document.getElementById('tplContent').value
@@ -267,8 +361,90 @@
             } catch (err) {
                 console.error(err);
                 alert('通信エラーが発生しました。');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         });
+
+        document.getElementById('editApptForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            const id = document.getElementById('editApptId').value;
+            const payload = {
+                companyName: document.getElementById('editCompany').value,
+                targetName: document.getElementById('editTarget').value,
+                systemName: document.getElementById('editSystem').value,
+                templateId: document.getElementById('editTemplate').value
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (res.ok) {
+                    document.getElementById('editApptModal').classList.add('hidden');
+                    loadAppointments();
+                } else {
+                    alert('サーバーエラーが発生しました');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('更新に失敗しました');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        });
+
+        function openEditApptModal(id) {
+            console.log("Opening edit modal for id:", id);
+            console.log("Current appointments:", currentAppointments);
+            const apt = currentAppointments.find(a => String(a.id) === String(id));
+            if (!apt) {
+                alert("アポイントデータが見つかりません: " + id);
+                return;
+            }
+            document.getElementById('editApptId').value = apt.id;
+            document.getElementById('editCompany').value = apt.companyName || '';
+            document.getElementById('editTarget').value = apt.targetName || '';
+            document.getElementById('editSystem').value = apt.systemName || '';
+            
+            if (apt.templateId) {
+                document.getElementById('editTemplate').value = apt.templateId;
+            }
+            
+            document.getElementById('editApptModal').classList.remove('hidden');
+        }
+
+        async function deleteAppointment() {
+            const id = document.getElementById('editApptId').value;
+            if (!id) return;
+            
+            if (!confirm('このアポイントを削除してもよろしいですか？\n※ヒアリング結果のデータもすべて消去されます。')) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE'
+                });
+                if (res.ok) {
+                    document.getElementById('editApptModal').classList.add('hidden');
+                    loadAppointments();
+                } else {
+                    alert('削除に失敗しました');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('通信エラーが発生しました');
+            }
+        }
 
         // Initialize
         loadAppointments();

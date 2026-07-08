@@ -70,6 +70,23 @@ app.post('/api/templates', (req, res) => {
     }
 });
 
+// Delete template
+app.delete('/api/templates/:id', (req, res) => {
+    try {
+        const safeFilename = path.basename(req.params.id);
+        const filePath = path.join(TEMPLATES_DIR, safeFilename);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            res.json({ message: 'Template deleted successfully' });
+        } else {
+            res.status(404).json({ error: 'Template not found' });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to delete template' });
+    }
+});
+
 // Get all appointments
 app.get('/api/appointments', (req, res) => {
     try {
@@ -100,13 +117,17 @@ app.post('/api/appointments', (req, res) => {
     try {
         const templateId = req.body.templateId || 'default.yml';
         let questions = [];
+        let templateMetadata = {};
         
-        // Load the template to embed questions
+        // Load the template to embed questions and metadata
         try {
             const templateContent = fs.readFileSync(path.join(TEMPLATES_DIR, templateId), 'utf8');
             const templateData = yaml.load(templateContent);
-            if (templateData && templateData.questions) {
-                questions = templateData.questions;
+            if (templateData) {
+                questions = templateData.questions || [];
+                // Save everything except questions as metadata
+                const { questions: _, ...rest } = templateData;
+                templateMetadata = rest;
             }
         } catch (e) {
             console.error("Template not found or invalid", e);
@@ -123,6 +144,7 @@ app.post('/api/appointments', (req, res) => {
             sysHistory: req.body.sysHistory || '',
             sysUsage: req.body.sysUsage || '',
             templateId: templateId,
+            templateMetadata: templateMetadata,
             questions: questions,
             scores: new Array(questions.length > 0 ? questions.length : 5).fill(3), // Default scores
             prompt: ''
@@ -143,11 +165,29 @@ app.put('/api/appointments/:id', (req, res) => {
         const index = data.appointments.findIndex(a => a.id === req.params.id);
         
         if (index !== -1) {
-            data.appointments[index] = {
+            let updatedAppt = {
                 ...data.appointments[index],
                 ...req.body,
                 updatedAt: new Date().toISOString()
             };
+
+            // If templateId changed, we must reload the questions
+            if (req.body.templateId && req.body.templateId !== data.appointments[index].templateId) {
+                try {
+                    const templateContent = fs.readFileSync(path.join(TEMPLATES_DIR, req.body.templateId), 'utf8');
+                    const templateData = yaml.load(templateContent);
+                    if (templateData) {
+                        updatedAppt.questions = templateData.questions || [];
+                        const { questions: _, ...rest } = templateData;
+                        updatedAppt.templateMetadata = rest;
+                        updatedAppt.scores = new Array(updatedAppt.questions.length > 0 ? updatedAppt.questions.length : 5).fill(3);
+                    }
+                } catch (e) {
+                    console.error("Template not found or invalid during update", e);
+                }
+            }
+
+            data.appointments[index] = updatedAppt;
             fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
             res.json(data.appointments[index]);
         } else {
@@ -155,6 +195,24 @@ app.put('/api/appointments/:id', (req, res) => {
         }
     } catch (err) {
         res.status(500).json({ error: 'Failed to update appointment' });
+    }
+});
+
+// Delete appointment
+app.delete('/api/appointments/:id', (req, res) => {
+    try {
+        const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+        const index = data.appointments.findIndex(a => a.id === req.params.id);
+        
+        if (index !== -1) {
+            data.appointments.splice(index, 1);
+            fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+            res.json({ message: 'Appointment deleted successfully' });
+        } else {
+            res.status(404).json({ error: 'Appointment not found' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to delete appointment' });
     }
 });
 
