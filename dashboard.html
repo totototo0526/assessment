@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アポイント管理ダッシュボード</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'Noto Sans JP', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#eef2ff', 100: '#e0e7ff', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 900: '#312e81' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-[#0f172a] text-gray-100 min-h-screen p-4 md:p-8 font-sans relative overflow-x-hidden">
+    <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-600/20 rounded-full blur-[120px] pointer-events-none z-0"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none z-0"></div>
+
+    <div class="max-w-5xl mx-auto relative z-10 space-y-8">
+        <header class="pt-8 flex justify-between items-end">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold mb-2 text-white">アポイント管理</h1>
+                <p class="text-gray-400">訪問先の事前入力と履歴の管理</p>
+            </div>
+            <button onclick="document.getElementById('createModal').classList.remove('hidden')" class="bg-brand-600 hover:bg-brand-500 text-white font-bold py-2 px-6 rounded-lg shadow transition flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                新規アポイント作成
+            </button>
+        </header>
+
+        <div class="glass-panel rounded-2xl p-6 shadow-xl">
+            <h2 class="text-xl font-bold text-white mb-6 border-b border-gray-700 pb-2">登録済みアポイント一覧</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="text-xs text-gray-400 uppercase bg-gray-800/50 rounded-t-lg">
+                        <tr>
+                            <th class="px-4 py-3 rounded-tl-lg">企業名</th>
+                            <th class="px-4 py-3">対象者</th>
+                            <th class="px-4 py-3">既存システム</th>
+                            <th class="px-4 py-3">ステータス</th>
+                            <th class="px-4 py-3 rounded-tr-lg text-right">アクション</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointmentList" class="divide-y divide-gray-700">
+                        <!-- Items will be injected here -->
+                    </tbody>
+                </table>
+                <div id="loadingIndicator" class="text-center py-8 text-gray-400">読み込み中...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Modal -->
+    <div id="createModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 rounded-xl p-6 w-full max-w-md shadow-2xl border border-slate-700">
+            <h2 class="text-xl font-bold text-white mb-4">新規アポイントの事前入力</h2>
+            <form id="createForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">企業名</label>
+                    <input type="text" id="newCompany" required class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:border-brand-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">対象者名</label>
+                    <input type="text" id="newTarget" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:border-brand-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">既存システム名</label>
+                    <input type="text" id="newSystem" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:border-brand-500 outline-none">
+                </div>
+                <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-700">
+                    <button type="button" onclick="document.getElementById('createModal').classList.add('hidden')" class="px-4 py-2 text-gray-300 hover:text-white transition">キャンセル</button>
+                    <button type="submit" class="bg-brand-600 hover:bg-brand-500 px-6 py-2 rounded-lg text-white font-bold transition">作成</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/appointments';
+
+        async function loadAppointments() {
+            try {
+                const res = await fetch(API_URL);
+                const data = await res.json();
+                const tbody = document.getElementById('appointmentList');
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-gray-500">アポイントがありません。新規作成してください。</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(apt => `
+                    <tr class="hover:bg-gray-800/30 transition">
+                        <td class="px-4 py-4 font-medium text-white">${apt.companyName || '未入力'}</td>
+                        <td class="px-4 py-4 text-gray-300">${apt.targetName || '-'}</td>
+                        <td class="px-4 py-4 text-gray-300">${apt.systemName || '-'}</td>
+                        <td class="px-4 py-4">
+                            ${apt.status === 'completed' 
+                                ? '<span class="bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs border border-green-500/30">ヒアリング済</span>' 
+                                : '<span class="bg-brand-500/20 text-brand-400 px-2 py-1 rounded text-xs border border-brand-500/30">未実施</span>'}
+                        </td>
+                        <td class="px-4 py-4 text-right">
+                            <a href="index.html?id=${apt.id}" class="inline-flex items-center gap-1 text-brand-400 hover:text-brand-300 font-medium transition">
+                                ${apt.status === 'completed' ? '結果を確認' : 'ヒアリング開始'} 
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </a>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loadingIndicator').innerText = 'データの読み込みに失敗しました。サーバーが起動しているか確認してください。';
+            }
+        }
+
+        document.getElementById('createForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                companyName: document.getElementById('newCompany').value,
+                targetName: document.getElementById('newTarget').value,
+                systemName: document.getElementById('newSystem').value
+            };
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (res.ok) {
+                    document.getElementById('createModal').classList.add('hidden');
+                    document.getElementById('createForm').reset();
+                    loadAppointments();
+                }
+            } catch (err) {
+                alert('作成に失敗しました。');
+            }
+        });
+
+        // Initialize
+        loadAppointments();
+    </script>
+</body>
+</html>
